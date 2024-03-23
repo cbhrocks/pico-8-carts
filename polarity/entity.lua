@@ -1,6 +1,6 @@
 entity = {
-    x=126,
-    y=126
+    x=63,
+    y=63
 }
 entity.__index=entity
 
