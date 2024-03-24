@@ -15,7 +15,15 @@ function _update()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
 
-    mouse:move(mouse_x, mouse_y)
+    mouse:place(mouse_x, mouse_y)
+
+	player:control(btn(0), btn(1), btn(2), btn(3))
+
+    for i, v in pairs(entities) do
+        v:update(time() - last)
+    end
+
+    last = time()
 end
 
 function restart()
@@ -23,10 +31,11 @@ function restart()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
 
+    last = time()
     mouse = entity:new()
-    ship = ship:new()
+    player = ship:new()
     entities = {
         mouse,
-        ship
+        player
     }
 end
