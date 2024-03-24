@@ -15,12 +15,17 @@ function _update()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
 
-    mouse:place(mouse_x, mouse_y)
+    mouse:move(mouse_x, mouse_y)
 
 	player:control(btn(0), btn(1), btn(2), btn(3))
 
     for i, v in pairs(entities) do
         v:update(time() - last)
+    end
+
+    if (flr(time()) == next_m) then
+        spawn_meteor(player)
+        next_m += meteor_interval
     end
 
     last = time()
@@ -38,4 +43,15 @@ function restart()
         mouse,
         player
     }
+    meteor_interval = 1
+    next_m = 1
+end
+
+function spawn_meteor(point)
+    local meteor = meteor:new({
+        x = point.x + 10,
+        y = point.y + 10
+    })
+    rotate_around(point, meteor, rnd(1))
+    entities[#entities+1] = meteor
 end
