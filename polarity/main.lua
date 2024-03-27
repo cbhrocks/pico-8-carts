@@ -49,8 +49,8 @@ end
 
 function spawn_meteor(point)
     local meteor = meteor:new({
-        x = point.x + 10,
-        y = point.y + 10
+        x = point.x - 10,
+        y = point.y
     })
     rotate_around(point, meteor, rnd(1))
     entities[#entities+1] = meteor
