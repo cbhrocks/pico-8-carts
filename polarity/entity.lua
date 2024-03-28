@@ -1,4 +1,6 @@
 entity = {
+    -- sprite id
+    s_id=nil,
     -- position
     x=63,
     y=63,
@@ -10,7 +12,7 @@ entity = {
     dx = 0,
     dy = 0,
     -- velocity
-    vx =  0,
+    vx = 0,
     vy = 0
 }
 entity.__index=entity
@@ -20,7 +22,11 @@ function entity:new(o)
 end
 
 function entity:draw()
-    circ(self.x,self.y,5,7)
+    if (self.s_id == nil) then
+        circ(self.x,self.y,5,7)
+    else
+        spr(self.s_id, self.x-4,self.y-4,1,1)
+    end
 end
 
 function entity:move(new_x, new_y)
