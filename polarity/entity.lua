@@ -13,7 +13,9 @@ entity = {
     dy = 0,
     -- velocity
     vx = 0,
-    vy = 0
+    vy = 0,
+    -- gun id
+    g = nil,
 }
 entity.__index=entity
 
@@ -35,10 +37,21 @@ function entity:move(new_x, new_y)
 end
 
 function entity:update(time)
+    if (self.g) then 
+        self.g.x = self.x
+        self.g.y = self.y
+        self.g.vx = self.vx
+        self.g.vy = self.vy
+        self.g:update(time)
+    end
     -- update velocity based on acceleration value
     self.vx = mid(-self.mv, self.vx + (self.dx * time), self.mv)
     self.vy = mid(-self.mv, self.vy + (self.dy * time), self.mv)
 
     self.x += self.vx
     self.y += self.vy
+end
+
+function entity:shoot(world, direction)
+    self.g:shoot(world, direction)
 end
