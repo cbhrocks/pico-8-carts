@@ -37,6 +37,8 @@ function gun:shoot(o, direction)
             unpack(self.p_props), 
             x=self.x, 
             y=self.y,
+            w=1,
+            h=1,
             vx=self.vx + cos(direction),
             vy=self.vy + sin(direction)
         }))

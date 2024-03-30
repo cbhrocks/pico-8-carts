@@ -1,6 +1,8 @@
 entity = {
-    -- sprite id
+    -- sprite id, width, height
     s_id=nil,
+    w=1,
+    h=1,
     -- position
     x=63,
     y=63,
@@ -16,6 +18,11 @@ entity = {
     vy = 0,
     -- gun id
     g = nil,
+    dead = false,
+    -- hit box height & width
+    hh = 8,
+    hw = 8,
+    ht = 'box'
 }
 entity.__index=entity
 
@@ -54,4 +61,15 @@ end
 
 function entity:shoot(world, direction)
     self.g:shoot(world, direction)
+end
+
+function collide(o)
+    if self.ht == 'box' and o.ht == 'box' then
+        for i, e in {o, self} do
+            for i1=0, 3 do
+                local i2 = i1 + 1 % 4
+            end
+        end
+    end
+    return false
 end

@@ -1,3 +1,6 @@
+screen_width = 128
+screen_height = 128
+
 function _init()
     -- enable mouse
 	poke(0x5f2d, 1)
@@ -18,12 +21,11 @@ function _update()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
 
-    state.mouse:move(mouse_x, mouse_y)
 
 	state.player:control(btn(0), btn(1), btn(2), btn(3))
 
-    if (btn(4) or btn(5)) then
-        state.player:shoot(state, atan2(mouse_x - state.player.x, mouse_y - state.player.y))
+    if (btn(4) or btn(5) or (stat(34) & 0b0001) != 0) then
+        state.player:shoot(state, atan2(state.mouse.x - state.player.x, state.mouse.y - state.player.y))
     end
 
     ArrayRemove(state.projectiles, function(t, i, j)
@@ -35,12 +37,10 @@ function _update()
     for i, v in pairs(state.entities) do
         v:update(time() - state.last)
     end
-
-    queue.pushright(ship_locs, {x = state.player.x - 63, y = state.player.y - 63})
-    if (ship_locs.last - ship_locs.first > 20) then
-        local loc = queue.popleft(ship_locs)
-        camera(loc.x, loc.y)
-    end
+    state.camera:move(state.player.x - screen_width/2, state.player.y - screen_height/2)
+    camera(state.camera.x, state.camera.y)
+    -- move mouse
+    state.mouse:move(mouse_x + state.camera.x, mouse_y + state.camera.y)
 
     if (flr(time()) == state.next_m) then
         spawn_meteor(state.player)
@@ -62,11 +62,16 @@ function restart()
             }
         })
     })
+    local camera = entity:new({
+        x=63,
+        y=63
+    })
 
     state = {
         last = time(),
         mouse = mouse,
         player = player,
+        camera = camera,
         entities = {
             mouse,
             player
@@ -76,7 +81,6 @@ function restart()
         meteor_interval = 1,
         next_m = 1,
     }
-
 
     ship_locs = queue:new()
 end
