@@ -31,12 +31,14 @@ function _update()
     ArrayRemove(state.projectiles, function(t, i, j)
         local v = t[i]
         v:update(time() - state.last)
+        local hit_player = colliding(v, state.player)
         return v.dead ~= true
     end)
 
     for i, v in pairs(state.entities) do
         v:update(time() - state.last)
     end
+
     state.camera:move(state.player.x - screen_width/2, state.player.y - screen_height/2)
     camera(state.camera.x, state.camera.y)
     -- move mouse

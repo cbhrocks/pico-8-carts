@@ -20,8 +20,8 @@ entity = {
     g = nil,
     dead = false,
     -- hit box height & width
-    hh = 8,
-    hw = 8,
+    hh = 4,
+    hw = 4,
     ht = 'box'
 }
 entity.__index=entity
@@ -63,13 +63,11 @@ function entity:shoot(world, direction)
     self.g:shoot(world, direction)
 end
 
-function collide(o)
-    if self.ht == 'box' and o.ht == 'box' then
-        for i, e in {o, self} do
-            for i1=0, 3 do
-                local i2 = i1 + 1 % 4
-            end
-        end
-    end
-    return false
+function entity:get_hit_pionts()
+    return {
+        {self.x-width, self.y-height}, --top left
+        {self.x-width, self.y+height}, --bottom left
+        {self.x+width, self.y+height}, --bottom right
+        {self.x+width, self.y-height}, --top right
+    }
 end
