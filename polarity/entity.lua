@@ -1,4 +1,7 @@
+
+
 entity = {
+    e_type = 'player',
     -- sprite id, width, height
     s_id=nil,
     w=1,
@@ -36,6 +39,11 @@ function entity:draw()
     else
         spr(self.s_id, self.x-4,self.y-4,1,1)
     end
+    local points = self:get_hit_points()
+    line(points[1][1], points[1][2], points[2][1], points[2][2])
+    line(points[2][1], points[2][2], points[3][1], points[3][2])
+    line(points[3][1], points[3][2], points[4][1], points[4][2])
+    line(points[4][1], points[4][2], points[1][1], points[1][2])
 end
 
 function entity:move(new_x, new_y)
@@ -63,11 +71,11 @@ function entity:shoot(world, direction)
     self.g:shoot(world, direction)
 end
 
-function entity:get_hit_pionts()
+function entity:get_hit_points()
     return {
-        {self.x-width, self.y-height}, --top left
-        {self.x-width, self.y+height}, --bottom left
-        {self.x+width, self.y+height}, --bottom right
-        {self.x+width, self.y-height}, --top right
+        {self.x-self.hw, self.y-self.hh}, --top left
+        {self.x-self.hw, self.y+self.hh}, --bottom left
+        {self.x+self.hw, self.y+self.hh}, --bottom right
+        {self.x+self.hw, self.y-self.hh}, --top right
     }
 end

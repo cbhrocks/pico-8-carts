@@ -15,6 +15,18 @@ function _draw()
     for i, v in pairs(state.projectiles) do
         v:draw()
     end
+    -- ArrayRemove(state.entities, function(t, i, j)
+    --     local v = t[i]
+    --     if v.e_type == 'enemy' then
+    --         --print('checking enemy', state.camera.x, state.camera.y)
+    --         for i, v2 in pairs(state.entities) do
+    --             if v2.e_type == 'player' and colliding(v, v2) then
+    --                 print('colliding', state.camera.x, state.camera.y)
+    --             end
+    --         end
+    --     end
+    --     return true
+    -- end)
 end
 
 function _update()
@@ -38,8 +50,14 @@ function _update()
     ArrayRemove(state.entities, function(t, i, j)
         local v = t[i]
         v:update(time() - state.last)
-        for i,j in state.entities do
-            colliding(state.)
+        if v.e_type == 'enemy' then
+            for i, v2 in pairs(state.entities) do
+                if v2.e_type == 'player' and colliding(v, v2) then
+                    return false
+                end
+            end
+        end
+        return true
     end)
 
     state.camera:move(state.player.x - screen_width/2, state.player.y - screen_height/2)
@@ -101,6 +119,7 @@ function spawn_meteor(point)
     local vx = cos(dirAng)
     local vy = sin(dirAng)
     local meteor = meteor:new({
+        e_type='enemy',
         x = x,
         y = y,
         vx = vx,
