@@ -3,13 +3,15 @@ version 42
 __lua__
 #include main.lua
 #include entity.lua
-#include entities/ship.lua
 #include entities/meteor.lua
 #include entities/projectile.lua
+#include entities/ship.lua
 #include gun.lua
-#include utils/transforms.lua
-#include utils/queue.lua
 #include utils/array.lua
+#include utils/collision.lua
+#include utils/queue.lua
+#include utils/transforms.lua
+
 __gfx__
 00066000004440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00555500044544440000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

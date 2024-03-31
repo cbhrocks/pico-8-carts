@@ -35,9 +35,12 @@ function _update()
         return v.dead ~= true
     end)
 
-    for i, v in pairs(state.entities) do
+    ArrayRemove(state.entities, function(t, i, j)
+        local v = t[i]
         v:update(time() - state.last)
-    end
+        for i,j in state.entities do
+            colliding(state.)
+    end)
 
     state.camera:move(state.player.x - screen_width/2, state.player.y - screen_height/2)
     camera(state.camera.x, state.camera.y)
