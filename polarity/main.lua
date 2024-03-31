@@ -17,10 +17,10 @@ function _draw()
     end
     -- ArrayRemove(state.entities, function(t, i, j)
     --     local v = t[i]
-    --     if v.e_type == 'enemy' then
+    --     if v.type == 'enemy' then
     --         --print('checking enemy', state.camera.x, state.camera.y)
     --         for i, v2 in pairs(state.entities) do
-    --             if v2.e_type == 'player' and colliding(v, v2) then
+    --             if v2.type == 'player' and colliding(v, v2) then
     --                 print('colliding', state.camera.x, state.camera.y)
     --             end
     --         end
@@ -30,9 +30,9 @@ function _draw()
 end
 
 function _update()
+    local update_time = time()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
-
 
 	state.player:control(btn(0), btn(1), btn(2), btn(3))
 
@@ -42,17 +42,26 @@ function _update()
 
     ArrayRemove(state.projectiles, function(t, i, j)
         local v = t[i]
-        v:update(time() - state.last)
-        local hit_player = colliding(v, state.player)
+        v:update(update_time - state.last)
+
+        -- check if enemy hit by player bullet
+        for i,e in pairs(state.entities) do
+            if e.type == 'enemy' and v.type == 'player' and colliding(v,e) then
+                e.dead = true
+                return false
+            end
+        end
         return v.dead ~= true
     end)
 
     ArrayRemove(state.entities, function(t, i, j)
         local v = t[i]
-        v:update(time() - state.last)
-        if v.e_type == 'enemy' then
+        if (v.dead) return false
+        v:update(update_time - state.last)
+        -- check if enemy is colliding with player
+        if v.type == 'enemy' then
             for i, v2 in pairs(state.entities) do
-                if v2.e_type == 'player' and colliding(v, v2) then
+                if v2.type == 'player' and colliding(v, v2) then
                     return false
                 end
             end
@@ -65,19 +74,21 @@ function _update()
     -- move mouse
     state.mouse:move(mouse_x + state.camera.x, mouse_y + state.camera.y)
 
-    if (flr(time()) == state.next_m) then
+    if (flr(update_time) == state.next_m) then
         spawn_meteor(state.player)
         state.next_m += state.meteor_interval
     end
 
-    state.last = time()
+    state.last = update_time
 end
 
 function restart()
     cls()
     local mouse_x = stat(32)
     local mouse_y = stat(33)
-    local mouse = entity:new()
+    local mouse = entity:new({
+        type='other'
+    })
     local player = ship:new({
         g = gun:new({
             projectile={
@@ -119,7 +130,7 @@ function spawn_meteor(point)
     local vx = cos(dirAng)
     local vy = sin(dirAng)
     local meteor = meteor:new({
-        e_type='enemy',
+        type='enemy',
         x = x,
         y = y,
         vx = vx,

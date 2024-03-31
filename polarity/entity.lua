@@ -1,7 +1,7 @@
 
 
 entity = {
-    e_type = 'player',
+    type = 'player',
     -- sprite id, width, height
     s_id=nil,
     w=1,
@@ -74,8 +74,8 @@ end
 function entity:get_hit_points()
     return {
         {self.x-self.hw, self.y-self.hh}, --top left
-        {self.x-self.hw, self.y+self.hh}, --bottom left
-        {self.x+self.hw, self.y+self.hh}, --bottom right
-        {self.x+self.hw, self.y-self.hh}, --top right
+        {self.x-self.hw, self.y+self.hh-1}, --bottom left
+        {self.x+self.hw-1, self.y+self.hh-1}, --bottom right
+        {self.x+self.hw-1, self.y-self.hh}, --top right
     }
 end
