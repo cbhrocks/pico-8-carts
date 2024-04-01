@@ -9,24 +9,15 @@ end
 
 function _draw()
     cls()
+    local update_time = time()
     for i, v in pairs(state.entities) do
         v:draw()
     end
     for i, v in pairs(state.projectiles) do
         v:draw()
     end
-    -- ArrayRemove(state.entities, function(t, i, j)
-    --     local v = t[i]
-    --     if v.type == 'enemy' then
-    --         --print('checking enemy', state.camera.x, state.camera.y)
-    --         for i, v2 in pairs(state.entities) do
-    --             if v2.type == 'player' and colliding(v, v2) then
-    --                 print('colliding', state.camera.x, state.camera.y)
-    --             end
-    --         end
-    --     end
-    --     return true
-    -- end)
+    print("refresh rate: "..update_time-state.last_draw.."",state.camera.x, state.camera.y)
+    state.last_draw = update_time
 end
 
 function _update()
@@ -42,7 +33,7 @@ function _update()
 
     ArrayRemove(state.projectiles, function(t, i, j)
         local v = t[i]
-        v:update(update_time - state.last)
+        v:update(update_time - state.last_update)
 
         -- check if enemy hit by player bullet
         for i,e in pairs(state.entities) do
@@ -57,7 +48,7 @@ function _update()
     ArrayRemove(state.entities, function(t, i, j)
         local v = t[i]
         if (v.dead) return false
-        v:update(update_time - state.last)
+        v:update(update_time - state.last_update)
         -- check if enemy is colliding with player
         if v.type == 'enemy' then
             for i, v2 in pairs(state.entities) do
@@ -79,7 +70,7 @@ function _update()
         state.next_m += state.meteor_interval
     end
 
-    state.last = update_time
+    state.last_update = update_time
 end
 
 function restart()
@@ -102,7 +93,8 @@ function restart()
     })
 
     state = {
-        last = time(),
+        last_update = time(),
+        last_draw = time(),
         mouse = mouse,
         player = player,
         camera = camera,
@@ -129,12 +121,13 @@ function spawn_meteor(point)
     local dirAng = atan2(dirx, diry) + rnd(0.1) - 0.05
     local vx = cos(dirAng)
     local vy = sin(dirAng)
-    local meteor = meteor:new({
+    local meteor = entity:new({
+        s_id=1,
         type='enemy',
         x = x,
         y = y,
         vx = vx,
-        vy = vy
+        vy = vy,
     })
     state.entities[#state.entities+1] = meteor
 end

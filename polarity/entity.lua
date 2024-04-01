@@ -1,5 +1,3 @@
-
-
 entity = {
     type = 'player',
     -- sprite id, width, height
@@ -22,10 +20,15 @@ entity = {
     -- gun id
     g = nil,
     dead = false,
-    -- hit box height & width
-    hh = 4,
-    hw = 4,
-    ht = 'box'
+    -- hit box
+    hb = {
+        t = 'ngon',
+        -- todo, reformat to be ngon
+        h = 4,
+        w = 4
+    },
+    duration=nil,
+    particles={}
 }
 entity.__index=entity
 
@@ -39,11 +42,14 @@ function entity:draw()
     else
         spr(self.s_id, self.x-4,self.y-4,1,1)
     end
-    local points = self:get_hit_points()
+    local points = self:get_hit_box()
     line(points[1][1], points[1][2], points[2][1], points[2][2])
     line(points[2][1], points[2][2], points[3][1], points[3][2])
     line(points[3][1], points[3][2], points[4][1], points[4][2])
     line(points[4][1], points[4][2], points[1][1], points[1][2])
+    for p in all(self.particles) do
+        p:draw()
+    end
 end
 
 function entity:move(new_x, new_y)
@@ -52,6 +58,13 @@ function entity:move(new_x, new_y)
 end
 
 function entity:update(time)
+    if self.duration ~= nil then
+        if (self.duration < 0) then
+            self.dead = true
+        else
+            self.duration -= time
+        end
+    end
     if (self.g) then 
         self.g.x = self.x
         self.g.y = self.y
@@ -65,17 +78,22 @@ function entity:update(time)
 
     self.x += self.vx
     self.y += self.vy
+    ArrayRemove(self.particles, function(t, i, j)
+        if (t[i].dead) return false
+        t[i]:update(time)
+        return true
+    end)
 end
 
 function entity:shoot(world, direction)
     self.g:shoot(world, direction)
 end
 
-function entity:get_hit_points()
+function entity:get_hit_box()
     return {
-        {self.x-self.hw, self.y-self.hh}, --top left
-        {self.x-self.hw, self.y+self.hh-1}, --bottom left
-        {self.x+self.hw-1, self.y+self.hh-1}, --bottom right
-        {self.x+self.hw-1, self.y-self.hh}, --top right
+        {self.x-self.hb.w, self.y-self.hb.h}, --top left
+        {self.x-self.hb.w, self.y+self.hb.h-1}, --bottom left
+        {self.x+self.hb.w-1, self.y+self.hb.h-1}, --bottom right
+        {self.x+self.hb.w-1, self.y-self.hb.h}, --top right
     }
 end

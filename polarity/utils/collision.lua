@@ -1,8 +1,8 @@
 -- https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
 function colliding(a, b)
-    if a.ht == 'box' and b.ht == 'box' then
+    if a.hb.t == 'ngon' and b.hb.t == 'ngon' then
         for i, polygon in pairs({a, b}) do
-            local points = polygon:get_hit_points()
+            local points = polygon:get_hit_box()
             for i1=1, #points do -- for each point thats connected
                 local i2 = i1 + 1
                 if (i1 == #points) i2 = 1
@@ -11,7 +11,7 @@ function colliding(a, b)
                 local normal = {p2[2] - p1[2], p1[1] - p2[1]}
 
                 local mina,maxa
-                for i,p in pairs(a:get_hit_points()) do
+                for i,p in pairs(a:get_hit_box()) do
                     local projected = normal[1] * p[1] + normal[2] * p[2]
                     if (mina == nil or projected < mina) then
                         mina = projected
@@ -22,7 +22,7 @@ function colliding(a, b)
                 end
 
                 local minb,maxb
-                for i,p in pairs(b:get_hit_points()) do
+                for i,p in pairs(b:get_hit_box()) do
                     local projected = normal[1] * p[1] + normal[2] * p[2]
                     if (minb == nil or projected < minb) then
                         minb = projected
@@ -37,6 +37,7 @@ function colliding(a, b)
                 end
             end
         end
+        return true
     end
-    return true
+    return false
 end
