@@ -10,12 +10,17 @@ end
 function _draw()
     cls()
     local update_time = time()
-    for i, v in pairs(state.entities) do
-        v:draw()
+    for s in all(state.stars) do
+        s:draw()
     end
-    for i, v in pairs(state.projectiles) do
-        v:draw()
+    for e in all(state.entities) do
+        e:draw()
     end
+    for p in all(state.projectiles) do
+        p:draw()
+    end
+    local direction = atan2(state.player.vx, state.player.vy)
+    --line(state.player.x, state.player.y, state.player.x + 20 * cos(direction), state.player.y + 20 * sin(direction), 7)
     print("refresh rate: "..update_time-state.last_draw.."",state.camera.x, state.camera.y)
     state.last_draw = update_time
 end
@@ -35,14 +40,14 @@ function _update()
         local v = t[i]
         v:update(update_time - state.last_update)
 
-        -- check if enemy hit by player bullet
-        for i,e in pairs(state.entities) do
-            if e.type == 'enemy' and v.type == 'player' and colliding(v,e) then
+        -- mark players hit by bullet as dead if not dead already
+        for e in all(state.entities) do
+            if not e.dead and e.type == 'enemy' and v.type == 'player' and colliding(v,e) then
                 e.dead = true
-                return false
+                v.dead = true
             end
         end
-        return v.dead ~= true
+        return not v.dead or #v.particles > 0
     end)
 
     ArrayRemove(state.entities, function(t, i, j)
@@ -51,8 +56,8 @@ function _update()
         v:update(update_time - state.last_update)
         -- check if enemy is colliding with player
         if v.type == 'enemy' then
-            for i, v2 in pairs(state.entities) do
-                if v2.type == 'player' and colliding(v, v2) then
+            for e in all(state.entities) do
+                if e.type == 'player' and colliding(v, e) then
                     return false
                 end
             end
@@ -62,6 +67,9 @@ function _update()
 
     state.camera:move(state.player.x - screen_width/2, state.player.y - screen_height/2)
     camera(state.camera.x, state.camera.y)
+
+    update_stars(update_time - state.last_update)
+
     -- move mouse
     state.mouse:move(mouse_x + state.camera.x, mouse_y + state.camera.y)
 
@@ -75,17 +83,14 @@ end
 
 function restart()
     cls()
+    --music(0)
     local mouse_x = stat(32)
     local mouse_y = stat(33)
     local mouse = entity:new({
         type='other'
     })
     local player = ship:new({
-        g = gun:new({
-            projectile={
-
-            }
-        })
+        g = guns.laser
     })
     local camera = entity:new({
         x=63,
@@ -103,7 +108,8 @@ function restart()
             player
         },
 
-        projectiles = { },
+        projectiles = {},
+        stars = {},
         meteor_interval = 1,
         next_m = 1,
     }
@@ -111,8 +117,45 @@ function restart()
     ship_locs = queue:new()
 end
 
+function update_stars(time)
+    for i=#state.stars, 50 do
+        local x = state.camera.x + rnd(screen_width)
+        local y = state.camera.y + rnd(screen_height)
+        local star = entity:new({
+            x = x,
+            y = y,
+            depth = rnd(58) + 2,
+            draw = function(o)
+                pset(o.x, o.y, 7)
+            end,
+            update = function(o, time, player)
+                o.vx = -player.vx/o.depth
+                o.vy = -player.vy/o.depth
+                entity.update(o, time)
+            end
+        })
+        add(state.stars, star)
+    end
+    for star in all(state.stars) do
+        star:update(time, state.player)
+        if star.x < state.camera.x do
+            star.x = state.camera.x + screen_width
+            star.y = state.camera.y + rnd(screen_height)
+        elseif star.y < state.camera.y do
+            star.y = state.camera.y + screen_height
+            star.x = state.camera.x + rnd(screen_width)
+        elseif star.x > state.camera.x + screen_width do
+            star.x = state.camera.x
+            star.y = state.camera.y + rnd(screen_height)
+        elseif star.y > state.camera.y + screen_height do
+            star.y = state.camera.y
+            star.x = state.camera.x + rnd(screen_width)
+        end
+    end
+end
+
 function spawn_meteor(point)
-    local distance = 50
+    local distance = 100
     local direction = rnd(1)
     local x = distance * cos(direction) + state.player.x
     local y = distance * sin(direction) + state.player.y

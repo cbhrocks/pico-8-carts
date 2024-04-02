@@ -1,8 +1,6 @@
 gun = {
     x = 0,
     y = 0,
-    vx = 0,
-    vy = 0,
     -- delay before shot is fired (charging up)
     delay = 0,
     -- how quickly can shoot again
@@ -10,7 +8,6 @@ gun = {
     -- while shooting 
     shooting = false,
     remaining_delay = 0,
-    p_props = {}
 }
 
 gun.__index=gun
@@ -31,18 +28,82 @@ function gun:update(time)
 end
 
 function gun:shoot(o, direction)
-    if (self.remaining_delay <= 0) then
-        --shoot
-        add(o.projectiles, projectile:new({
-            unpack(self.p_props), 
-            x=self.x, 
-            y=self.y,
-            w=1,
-            h=1,
-            vx=self.vx + cos(direction),
-            vy=self.vy + sin(direction)
-        }))
-        self.remaining_delay = self.rate + self.delay
-    end
-    self.shooting = true
+    -- needs to be implemented!
+    return nil
 end
+
+guns = {
+    plasma = gun:new({
+        shoot=function(s, state, direction)
+            if (s.remaining_delay <= 0) then
+                add(state.projectiles, entity:new({
+                    x=s.x,
+                    y=s.y,
+                    vx=state.player.vx + cos(direction) * 2,
+                    vy=state.player.vy + sin(direction) * 2,
+                    duration = 2,
+                    s_id = 17,
+                    draw = function(o)
+                        for p in all(o.particles) do
+                            p:draw()
+                        end
+                        if not o.dead then
+                            rspr(o.s_id, o.x-4, o.y-4, atan2(o.vx, o.vy), o.w, o.h)
+                        end
+                    end,
+                    update = function(o, time)
+                        entity.update(o, time)
+                        -- add particles after, so they draw where they spawn
+                        if (not o.dead) do
+                            add(o.particles, entity:new({
+                                duration=rnd(.075)+.075,
+                                x=o.x,
+                                y=o.y,
+                                draw=function(o)
+                                    pset(o.x, o.y, 1)
+                                end
+                            }))
+                        end
+                    end
+                }))
+                s.remaining_delay = s.rate + s.delay
+            end
+            s.shooting = true
+        end
+    }),
+    laser = gun:new({
+        range=50,
+        shoot=function(s, state, direction)
+            if (s.remaining_delay <= 0) then
+                add(state.projectiles, entity:new({
+                    x=s.x,
+                    y=s.y,
+                    vx=cos(direction) * s.range,
+                    vy=sin(direction) * s.range,
+                    duration = .3,
+                    draw = function(o)
+                        local n = sqrt(o.vx^2 + o.vy^2)
+                        line(o.x, o.y, o.x + o.vx, o.y + o.vy, 11)
+                    end,
+                    update = function(o, time)
+                        if o.duration ~= nil then
+                            if (o.duration < 0) then
+                                o.dead = true
+                            else
+                                o.duration -= time
+                            end
+                        end
+                    end,
+                    hb = {
+                        t='line'
+                    },
+                    get_hit_box=function(o)
+                        return {{o.x, o.y}, {o.vx, o.vy}}
+                    end
+                }))
+                s.remaining_delay = s.rate + s.delay
+            end
+            s.shooting = true
+        end
+    })
+}

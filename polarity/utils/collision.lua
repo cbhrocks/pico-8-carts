@@ -1,6 +1,19 @@
 -- https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
 function colliding(a, b)
-    if a.hb.t == 'ngon' and b.hb.t == 'ngon' then
+    if (a.hb.t == 'line' and b.hb.t == 'ngon') or (a.hb.t == 'ngon' and b.hb.t == 'line') then
+        local hitbox1 = a:get_hit_box()
+        local hitbox2 = b:get_hit_box()
+        for i=1,#hitbox1,2 do
+            for j=1,#hitbox2,2 do
+                if intersect(hitbox1[i], hitbox1[i+1], hitbox2[j], hitbox2[j+1]) then
+                    printh('intersected!', 'log')
+                    return true
+                end
+                printh('not intersected!', 'log')
+            end
+        end
+        return false
+    elseif a.hb.t == 'ngon' and b.hb.t == 'ngon' then
         for i, polygon in pairs({a, b}) do
             local points = polygon:get_hit_box()
             for i1=1, #points do -- for each point thats connected
@@ -40,4 +53,13 @@ function colliding(a, b)
         return true
     end
     return false
+end
+
+-- https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
+function ccw(a,b,c)
+    return (c[2] - a[1]) * (b[1] - a[1]) > (b[2]-a[2]) * (c[1]-a[1])
+end
+
+function intersect(a,b,c,d)
+    return ccw(a,c,d) != ccw(b,c,d) and ccw(a,b,c) != ccw(a,b,d)
 end
