@@ -3,9 +3,15 @@ function colliding(a, b)
     if (a.hb.t == 'line' and b.hb.t == 'ngon') or (a.hb.t == 'ngon' and b.hb.t == 'line') then
         local hitbox1 = a:get_hit_box()
         local hitbox2 = b:get_hit_box()
-        for i=1,#hitbox1,2 do
-            for j=1,#hitbox2,2 do
-                if intersect(hitbox1[i], hitbox1[i+1], hitbox2[j], hitbox2[j+1]) then
+        printh('hitbox1 '..dump(hitbox1)..'', 'log')
+        printh('hitbox2 '..dump(hitbox2)..'', 'log')
+        for i=1,#hitbox1 do
+            for j=1,#hitbox2 do
+                local i2 = i+1
+                local j2 = j+1
+                if (i2 > #hitbox1) i2 = 1
+                if (j2 > #hitbox2) j2 = 1
+                if intersect(hitbox1[i], hitbox1[i2], hitbox2[j], hitbox2[j2]) then
                     printh('intersected!', 'log')
                     return true
                 end
@@ -61,5 +67,6 @@ function ccw(a,b,c)
 end
 
 function intersect(a,b,c,d)
+    printh('intersect'..dump({a,b,c,d})..'','log')
     return ccw(a,c,d) != ccw(b,c,d) and ccw(a,b,c) != ccw(a,b,d)
 end

@@ -32,6 +32,7 @@ function gun:shoot(o, direction)
     return nil
 end
 
+
 guns = {
     plasma = gun:new({
         shoot=function(s, state, direction)
@@ -64,6 +65,10 @@ guns = {
                                 end
                             }))
                         end
+                    end,
+                    onhit = function(s, o)
+                        s.dead = true
+                        o.dead = true
                     end
                 }))
                 s.remaining_delay = s.rate + s.delay
@@ -82,7 +87,6 @@ guns = {
                     vy=sin(direction) * s.range,
                     duration = .3,
                     draw = function(o)
-                        local n = sqrt(o.vx^2 + o.vy^2)
                         line(o.x, o.y, o.x + o.vx, o.y + o.vy, 11)
                     end,
                     update = function(o, time)
@@ -99,6 +103,9 @@ guns = {
                     },
                     get_hit_box=function(o)
                         return {{o.x, o.y}, {o.vx, o.vy}}
+                    end,
+                    onhit=function(s, o)
+                        o.dead = true
                     end
                 }))
                 s.remaining_delay = s.rate + s.delay

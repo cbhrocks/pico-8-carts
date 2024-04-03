@@ -43,8 +43,7 @@ function _update()
         -- mark players hit by bullet as dead if not dead already
         for e in all(state.entities) do
             if not e.dead and e.type == 'enemy' and v.type == 'player' and colliding(v,e) then
-                e.dead = true
-                v.dead = true
+                v:onhit(e)
             end
         end
         return not v.dead or #v.particles > 0
