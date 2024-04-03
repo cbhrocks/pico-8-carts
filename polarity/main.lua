@@ -125,7 +125,8 @@ function update_stars(time)
             y = y,
             depth = rnd(58) + 2,
             draw = function(o)
-                pset(o.x, o.y, 7)
+                colors = {7, 2, 13}
+                pset(o.x, o.y, colors[ceil(o.depth/60*3)])
             end,
             update = function(o, time, player)
                 o.vx = -player.vx/o.depth
