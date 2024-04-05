@@ -1,5 +1,6 @@
 screen_width = 128
 screen_height = 128
+star_colors = {7, 2, 13}
 
 function _init()
     -- enable mouse
@@ -10,10 +11,12 @@ end
 function _draw()
     cls()
     local update_time = time()
+    state.player:draw()
+    state.mouse:draw()
     for s in all(state.stars) do
         s:draw()
     end
-    for e in all(state.entities) do
+    for e in all(state.enemies) do
         e:draw()
     end
     for p in all(state.projectiles) do
@@ -36,31 +39,39 @@ function _update()
         state.player:shoot(state, atan2(state.mouse.x - state.player.x, state.mouse.y - state.player.y))
     end
 
+    state.player:update(update_time - state.last_update)
+    state.mouse:update(update_time - state.last_update)
+
     ArrayRemove(state.projectiles, function(t, i, j)
         local v = t[i]
         v:update(update_time - state.last_update)
 
-        -- mark players hit by bullet as dead if not dead already
-        for e in all(state.entities) do
-            if not e.dead and e.type == 'enemy' and v.type == 'player' and colliding(v,e) then
+        -- when enemy is hit, perform on hit
+        for e in all(state.enemies) do
+            if not e.dead and colliding(v,e) then
                 v:onhit(e)
             end
         end
+
         return not v.dead or #v.particles > 0
     end)
 
-    ArrayRemove(state.entities, function(t, i, j)
+    ArrayRemove(state.enemies, function(t, i, j)
         local v = t[i]
         if (v.dead) return false
         v:update(update_time - state.last_update)
-        -- check if enemy is colliding with player
-        if v.type == 'enemy' then
-            for e in all(state.entities) do
-                if e.type == 'player' and colliding(v, e) then
-                    return false
-                end
-            end
+
+        -- check if distance is max
+        if (abs(v.x - state.player.x) + abs(v.y - state.player.y) > 500) then
+            return false
         end
+
+        -- check if colliding with player
+        if colliding(v, state.player) then
+            -- kill for now
+            return false
+        end
+
         return true
     end)
 
@@ -73,7 +84,7 @@ function _update()
     state.mouse:move(mouse_x + state.camera.x, mouse_y + state.camera.y)
 
     if (flr(update_time) == state.next_m) then
-        spawn_meteor(state.player)
+        spawn_enemies(state.player)
         state.next_m += state.meteor_interval
     end
 
@@ -102,12 +113,10 @@ function restart()
         mouse = mouse,
         player = player,
         camera = camera,
-        entities = {
-            mouse,
-            player
-        },
-
+        -- better to keep these in seperate lists. easier to optimize loops
+        enemies = { },
         projectiles = {},
+        particles = {},
         stars = {},
         meteor_interval = 1,
         next_m = 1,
@@ -119,14 +128,15 @@ end
 function update_stars(time)
     for i=#state.stars, 50 do
         local x = state.camera.x + rnd(screen_width)
+        local depth = rnd(58) + 2
+        local color = star_colors[ceil(depth/60*3)]
         local y = state.camera.y + rnd(screen_height)
         local star = entity:new({
             x = x,
             y = y,
             depth = rnd(58) + 2,
             draw = function(o)
-                colors = {7, 2, 13}
-                pset(o.x, o.y, colors[ceil(o.depth/60*3)])
+                pset(o.x, o.y, color)
             end,
             update = function(o, time, player)
                 o.vx = -player.vx/o.depth
@@ -154,7 +164,7 @@ function update_stars(time)
     end
 end
 
-function spawn_meteor(point)
+function spawn_enemies(point)
     local distance = 100
     local direction = rnd(1)
     local x = distance * cos(direction) + state.player.x
@@ -172,5 +182,5 @@ function spawn_meteor(point)
         vx = vx,
         vy = vy,
     })
-    state.entities[#state.entities+1] = meteor
+    state.enemies[#state.enemies+1] = meteor
 end

@@ -1,21 +1,19 @@
 -- https://stackoverflow.com/questions/10962379/how-to-check-intersection-between-2-rotated-rectangles
 function colliding(a, b)
     if (a.hb.t == 'line' and b.hb.t == 'ngon') or (a.hb.t == 'ngon' and b.hb.t == 'line') then
-        local hitbox1 = a:get_hit_box()
-        local hitbox2 = b:get_hit_box()
-        printh('hitbox1 '..dump(hitbox1)..'', 'log')
-        printh('hitbox2 '..dump(hitbox2)..'', 'log')
-        for i=1,#hitbox1 do
-            for j=1,#hitbox2 do
-                local i2 = i+1
-                local j2 = j+1
-                if (i2 > #hitbox1) i2 = 1
-                if (j2 > #hitbox2) j2 = 1
-                if intersect(hitbox1[i], hitbox1[i2], hitbox2[j], hitbox2[j2]) then
-                    printh('intersected!', 'log')
-                    return true
-                end
-                printh('not intersected!', 'log')
+        local line, hitbox
+        if a.hb.t == 'line' then
+            line = a:get_hit_box()
+            hitbox = b:get_hit_box()
+        else
+            line = b:get_hit_box()
+            hitbox = a:get_hit_box()
+        end
+        for i=1,#hitbox do
+            local i2 = i+1
+            if (i2 > #hitbox) i2 = 1
+            if intersect(line[1], line[2], hitbox[i], hitbox[i2]) then
+                return true
             end
         end
         return false
@@ -63,10 +61,9 @@ end
 
 -- https://bryceboe.com/2006/10/23/line-segment-intersection-algorithm/
 function ccw(a,b,c)
-    return (c[2] - a[1]) * (b[1] - a[1]) > (b[2]-a[2]) * (c[1]-a[1])
+    return (c[2] - a[2]) * (b[1] - a[1]) > (b[2]-a[2]) * (c[1]-a[1])
 end
 
 function intersect(a,b,c,d)
-    printh('intersect'..dump({a,b,c,d})..'','log')
     return ccw(a,c,d) != ccw(b,c,d) and ccw(a,b,c) != ccw(a,b,d)
 end

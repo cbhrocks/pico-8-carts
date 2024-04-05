@@ -8,6 +8,7 @@ gun = {
     -- while shooting 
     shooting = false,
     remaining_delay = 0,
+    sfx = 63
 }
 
 gun.__index=gun
@@ -72,6 +73,7 @@ guns = {
                     end
                 }))
                 s.remaining_delay = s.rate + s.delay
+                sfx(s.sfx, -1, 0, 2)
             end
             s.shooting = true
         end
@@ -102,13 +104,14 @@ guns = {
                         t='line'
                     },
                     get_hit_box=function(o)
-                        return {{o.x, o.y}, {o.vx, o.vy}}
+                        return {{o.x, o.y}, {o.x+o.vx, o.y+o.vy}}
                     end,
                     onhit=function(s, o)
                         o.dead = true
                     end
                 }))
                 s.remaining_delay = s.rate + s.delay
+                sfx(s.sfx, -1, 2, 2)
             end
             s.shooting = true
         end
